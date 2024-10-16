@@ -1,13 +1,13 @@
-import sys
-import logging
 from typing import Any
 
+import logging
+import sys
 import uuid
-from rdflib import Graph, Namespace, Literal, RDF, URIRef
+
+from rdflib import RDF, Graph, Literal, Namespace, URIRef
 
 from .crypto_provider import CryptoProvider
 from .data import DATAPRODUCT_METADATA
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -76,9 +76,9 @@ class CountryValidator(BaseValidator):
             raise Exception(f"Operator {operator} is not supported")
 
         return (
-            left_operand == ODRL.spatial and
-            operator == ODRL.eq and
-            right_operand == Literal(user_context.country)
+            left_operand == ODRL.spatial
+            and operator == ODRL.eq
+            and right_operand == Literal(user_context.country)
         )
 
 
@@ -94,11 +94,12 @@ class DCAT3:
                 for constraint in self.graph.objects(permission, ODRL.constraint):
                     constraint_dict = {
                         ODRL.leftOperand: self.graph.value(
-                            constraint, ODRL.leftOperand),
-                        ODRL.operator: self.graph.value(
-                            constraint, ODRL.operator),
+                            constraint, ODRL.leftOperand
+                        ),
+                        ODRL.operator: self.graph.value(constraint, ODRL.operator),
                         ODRL.rightOperand: self.graph.value(
-                            constraint, ODRL.rightOperand)
+                            constraint, ODRL.rightOperand
+                        ),
                     }
                     for validator in self.validators:
                         if not validator.validate(constraint_dict, user_context):
@@ -109,7 +110,8 @@ class DCAT3:
         download_urls = []
         for distribution in self.graph.subjects(RDF.type, DCAT.Distribution):
             download_url = self.graph.value(
-                subject=distribution, predicate=DCAT.downloadURL)
+                subject=distribution, predicate=DCAT.downloadURL
+            )
             if download_url:
                 download_urls.append(str(download_url))
         return download_urls
@@ -130,10 +132,12 @@ class ContractRequest:
         self.consumer_signature = consumer_signature
 
     def __str__(self):
-        return f"ContractRequest(" \
-               f"dataproduct={self.dataproduct}, " \
-               f"consumer_aid={self.consumer.auth_client.get_aid()}, " \
-               f"consumer_signature={cut_string(self.consumer_signature.hex())})"
+        return (
+            f"ContractRequest("
+            f"dataproduct={self.dataproduct}, "
+            f"consumer_aid={self.consumer.auth_client.get_aid()}, "
+            f"consumer_signature={cut_string(self.consumer_signature.hex())})"
+        )
 
 
 class Contract(ContractRequest):
@@ -152,12 +156,14 @@ class Contract(ContractRequest):
         self.provider_signature = provider_signature
 
     def __str__(self):
-        return f"Contract(" \
-               f"dataproduct={self.dataproduct}, " \
-               f"consumer_aid={self.consumer.auth_client.get_aid()}, " \
-               f"consumer_signature={self.consumer_signature.hex()}, " \
-               f"provider_aid={self.provider.auth_client.get_aid()}, " \
-               f"provider_signature={cut_string(self.provider_signature.hex())})"
+        return (
+            f"Contract("
+            f"dataproduct={self.dataproduct}, "
+            f"consumer_aid={self.consumer.auth_client.get_aid()}, "
+            f"consumer_signature={self.consumer_signature.hex()}, "
+            f"provider_aid={self.provider.auth_client.get_aid()}, "
+            f"provider_signature={cut_string(self.provider_signature.hex())})"
+        )
 
 
 # --------------------------------------------------------------------------------------
@@ -217,7 +223,8 @@ class Consumer(DSConnector):
             dataproduct=dataproduct,
             consumer=self,
             consumer_signature=self.crypto_provider.sign(
-                dataproduct.metadata, self.private_key),
+                dataproduct.metadata, self.private_key
+            ),
         )
 
     def validate_provider_signature(self, contract: Contract) -> bool:
@@ -246,22 +253,26 @@ class Provider(DSConnector):
         Validate the request contract by checking the policy and the signature.
         """
         local_dataproduct = self.catalog.get(request.dataproduct.id)
-        if local_dataproduct is None or local_dataproduct.metadata \
-                != request.dataproduct.metadata:
+        if (
+            local_dataproduct is None
+            or local_dataproduct.metadata != request.dataproduct.metadata
+        ):
             return False
-        return request.dataproduct.validate_policy(request.consumer) and \
-            self.crypto_provider.verify(
-                request.dataproduct.metadata,
-                request.consumer_signature,
-                request.consumer.public_key,
-            )
+        return request.dataproduct.validate_policy(
+            request.consumer
+        ) and self.crypto_provider.verify(
+            request.dataproduct.metadata,
+            request.consumer_signature,
+            request.consumer.public_key,
+        )
 
     def sign_request_contract(self, request: ContractRequest) -> Contract:
         return Contract(
             request=request,
             provider=self,
             provider_signature=self.crypto_provider.sign(
-                request.dataproduct.metadata, self.private_key),
+                request.dataproduct.metadata, self.private_key
+            ),
         )
 
     def get_real_data(self, contract: Contract) -> Any:
@@ -298,8 +309,8 @@ class ClearingHouse:
     def register_data_use(self, contract: Contract) -> None:
         self.logs.append(f"Data used: {contract}")
 
-    def confirm_data_use(self, contract: Contract) -> None:
-        self.logs.append(f"Data use confirmed: {contract}")
+    def confirm_data_use(self, contract: Contract, user: DSConnector) -> None:
+        self.logs.append(f"Data use confirmed: {user}, {contract}")
 
     def formatted_logs(self) -> str:
         formatted_logs = "\n=== Clearing House Logs ===\n"
@@ -312,8 +323,9 @@ class ClearingHouse:
 # --------------------------------------------------------------------------------------
 # --------------------------------------------------------------------------------------
 
+
 def sign_contract_and_use_data():
-    logger.debug("Starting use case \"sign_contract_and_use_data\"")
+    logger.debug('Starting use case "sign_contract_and_use_data"')
 
     # --- Setup ---
     logger.debug("\n=== Setup ===")
@@ -328,9 +340,11 @@ def sign_contract_and_use_data():
     provider = Provider(
         crypto_provider=crypto_provider,
         auth_client=AuthClient(user_context=UserContext(country="US")),
-        catalog=Catalog(items=[
-            DataProduct(id="Dataproduct 1", metadata=DATAPRODUCT_METADATA),
-        ])
+        catalog=Catalog(
+            items=[
+                DataProduct(id="Dataproduct 1", metadata=DATAPRODUCT_METADATA),
+            ]
+        ),
     )
 
     logger.debug(f"\nConsumer: {consumer}")
@@ -360,7 +374,8 @@ def sign_contract_and_use_data():
     # Sign contract
     if not provider.validate_request_contract(contract_request):
         raise Exception(
-            "Request rejected: policy is not valid or signature is not valid")
+            "Request rejected: policy is not valid or signature is not valid"
+        )
     contract = provider.sign_request_contract(contract_request)
     clearing_house.register_contract(contract)
     logger.debug(f"Provider validated and signed contract: {contract}")
@@ -371,8 +386,7 @@ def sign_contract_and_use_data():
 
     # Confirm receipt of contract
     if not consumer.validate_provider_signature(contract):
-        raise Exception(
-            "Contract rejected: providers's signature is not valid")
+        raise Exception("Contract rejected: providers's signature is not valid")
     clearing_house.confirm_contract(contract)
     logger.debug("Consumer confirmed receipt of contract")
 
@@ -381,6 +395,7 @@ def sign_contract_and_use_data():
         # --- Consumer ---
         clearing_house.register_data_use(contract)
         data = provider.get_real_data(contract)
+        clearing_house.confirm_data_use(contract, consumer)
         logger.info(f"Consumer used data: {data}")
     except Exception as e:
         logger.error(f"\nError: {e}")
@@ -388,11 +403,11 @@ def sign_contract_and_use_data():
         # --- Provider ---
         logger.debug("\n--- Provider ---")
         logger.debug(f"Provider confirmed data use: {data}")
-        clearing_house.confirm_data_use(contract)
+        clearing_house.confirm_data_use(contract, provider)
 
     logger.info(clearing_house.formatted_logs())
 
-    logger.debug("Use case \"sign_contract_and_use_data\" finished")
+    logger.debug('Use case "sign_contract_and_use_data" finished')
 
 
 if __name__ == "__main__":

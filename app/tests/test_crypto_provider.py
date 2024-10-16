@@ -33,7 +33,7 @@ def test_sign_and_verify_success(crypto_provider, keys):
 def test_verify_invalid_signature(crypto_provider, keys):
     _, public_key = keys
     data = "Test data for signing"
-    invalid_signature = b'invalidsignature'
+    invalid_signature = b"invalidsignature"
 
     is_valid = crypto_provider.verify(data, invalid_signature, public_key)
     assert is_valid is False

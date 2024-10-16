@@ -1,7 +1,16 @@
 # Demo ORDL Contract
 
+* Use case 1: Sign contract and use data
+  ![Use case 1](docs/usecase1.jpg)
+
 ## Requirements
 Python 3.12+
+
+## Installation
+```bash
+pip install pre-commit
+pre-commit install
+```
 
 ## Development
 1. If you don't have `Poetry` installed run:
@@ -15,7 +24,8 @@ Python 3.12+
     poetry install --no-root --with dev,test
     ```
 
-3. Launch the project:
+3. Launch the usecase:
+  **Use case 1: Sign contract and use data**
     ```bash
     poetry run python -m app.usecases
     ```
