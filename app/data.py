@@ -9,7 +9,7 @@ DATAPRODUCT_METADATA = """
         {
             "@id": "http://example.org/dataset/1",
             "@type": "dcat:Dataset",
-            "dcterms:identifier": "1",
+            "dcterms:identifier": "http://example.org/dataset/1",
             "dcterms:title": "Dataset 1",
             "dcat:distribution": {
                 "@id": "http://example.org/distribution/1"
@@ -24,18 +24,23 @@ DATAPRODUCT_METADATA = """
             "dcat:downloadURL": "http://example.org/dataset/1.csv"
         },
         {
+            "@id": "http://example.org/distribution/2",
+            "@type": "dcat:Distribution",
+            "dcat:downloadURL": "http://example.org/dataset/2.csv"
+        },
+        {
             "@id": "http://example.org/policy/1",
             "@type": "odrl:Policy",
             "odrl:permission": [
                 {
                     "odrl:target": {
-                        "@id": "http://example.org/dataset/1"
+                        "@id": "http://example.org/distribution/2"
                     },
                     "odrl:assignee": {
                         "@id": "odrl:All"
                     },
                     "odrl:action": {
-                        "@id": "odrl:use"
+                        "@id": "odrl:read"
                     },
                     "odrl:constraint": [
                         {
@@ -52,5 +57,17 @@ DATAPRODUCT_METADATA = """
             ]
         }
     ]
+}
+"""
+
+DEFAULT_SERVICE_POLICY = """
+{
+    "@context": {
+        "odrl": "http://www.w3.org/ns/odrl/2/",
+        "schema": "http://schema.org/",
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    },
+    "@type": "odrl:Policy",
+    "odrl:permission": []
 }
 """

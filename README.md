@@ -1,7 +1,12 @@
 # Demo ORDL Contract
 
-* Use case 1: Sign contract and use data
+* **Use case 1: Sign contract and use data:**
+  This use case demonstrates the process of checking data access policy, negotiation between consumer and provider, contract signing, data retrieval, and agreement registration in the registry.
+
   ![Use case 1](docs/usecase1.jpg)
+
+* **Use case 2: Delegate permission and service access:**
+  This use case demonstrates the process of delegating access to a third party, as well as access to a service by a third party.
 
 ## Requirements
 Python 3.12+
@@ -25,10 +30,13 @@ pre-commit install
     ```
 
 3. Launch the usecase:
-  **Use case 1: Sign contract and use data**
     ```bash
-    poetry run python -m app.usecases
+    poetry run python -m app.usecases <usecase_number>
     ```
+
+    Usecase number:
+    * 1 - Sign contract and use data
+    * 2 - Delegate permission and service access
 
 ## License
 MIT
